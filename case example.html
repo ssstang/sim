@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Case 1</title>
+
+<body>
+
+
+<div id="intro">
+	Welcome! Press "Start" to begin the case. <br>
+	<button type="button" onclick="startCase()">Start</button>
+</div>
+
+<div id="demo"></div>
+<div id="commandcontainer"></div>
+
+<script type='text/javascript'>
+var commandBox = null;
+var commandHistory = [];
+var state = {}
+var timer = 0; //in minutes
+
+startCase(); //this circumvents the welcome page
+
+function initState() {
+	state.hasoxygen = false;
+	state.isdying = false;
+	state.three = false;
+	state.six = false;
+	state.codeblue = false;
+}
+
+function startCase() {
+	document.getElementById("intro").innerHTML= "Case Description <br>";
+	commandBox = document.createElement("input");
+	commandBox.autocomplete = "off";
+	commandBox.id = "command";
+	commandBox.size = 30;
+	document.getElementById("commandcontainer").appendChild(commandBox);
+
+	commandBox = document.getElementById("command");
+	commandBox.addEventListener("keypress", onKeyPressed);
+
+	initState();
+	setInterval(function(){timer=timer+1}, 60000);
+}
+
+function onKeyPressed(e) {
+	if (e.key == 'Enter' && commandBox.value != "") {
+		receiveCommand(commandBox.value.toLowerCase());
+		commandBox.value = "";
+	}
+}
+
+function receiveCommand(text) {
+	showText(" > " + text);
+	var response = parseCommand(text);
+
+	if ('badcommand' in response) {
+		showText("I don't understand that command");
+	}
+	else {
+		commandHistory.push({ 'command': text, correct: response.correct });
+		showText(response.reply);
+	}
+}
+
+function parseCommand(text) {
+	if (text == "give oxygen") {
+		state.hasoxygen = true;
+		return { reply: "I have oxygen", correct: 1 };
+	}
+	if (text == "play") {
+		state.hasoxygen = true;
+		return { reply: "Thats bad", correct: 0 };
+	}
+	else if (text == "kill patient") {
+		state.isdying = true;
+		return { reply: "I am dying", correct: -1 };
+	}
+	else {
+		return { badcommand: true };
+	}
+}
+
+function showText(text) {
+	var div = document.createElement("div");
+	document.getElementById("demo").appendChild(div);
+	div.innerHTML = text;
+}
+
+function checkTimer(timer) {
+	if ((timer == 3) && (state.three = false)) {
+		return { reply: "Patient looks worse. Oxygen level has decreased and HR has increased." }
+	}
+	if ((timer == 6) && (state.six = false)) {
+		return { reply: "Patient is obtunded and pulseless." }
+	}
+	if ((timer == 9) && (state.codeblue = false)) {
+		return { reply: "Patient will not improve." };
+		endGame();
+	}
+	if (timer == 12) {
+		endGame();
+	}
+}
+
+</script>
+</body>
+</html>
